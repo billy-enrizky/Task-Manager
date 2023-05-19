@@ -1,126 +1,188 @@
-# Create Your First Web App with Python and Flask
+# Create Task Manager Using Flask
 
-This is a beginner's guide to creating a simple web application using Python and Flask. Flask is a lightweight web framework that allows you to build web applications quickly and easily. By following this guide, you will learn how to set up a basic Flask application, create routes, handle HTTP requests, and render HTML templates.
+This is a guide on how to create a Task Manager web application using Flask, a Python web framework. The Task Manager allows users to add, edit, and delete tasks with a title and description.
 
 ## Prerequisites
 
-Before getting started, make sure you have the following installed on your machine:
+Before getting started, make sure you have the following installed:
 
-- Python (version 3.6 or higher)
-- Flask (you can install it using pip: `pip install flask`)
+- Python (version 3.6 or later)
+- Flask (install using `pip install flask`)
 
-## Getting Started
+## Project Setup
 
-1. Create a new directory for your project.
-2. Open a command prompt or terminal and navigate to the project directory.
-3. Create a virtual environment (optional but recommended) by running the following command:
-
+1. Create a new directory for your project and navigate to it.
+2. Initialize a new virtual environment:
    ```shell
    python -m venv venv
    ```
-
-4. Activate the virtual environment:
-
-   - For Windows:
-
+3. Activate the virtual environment:
+   - On Windows:
      ```shell
      venv\Scripts\activate
      ```
-
-   - For macOS/Linux:
-
+   - On macOS/Linux:
      ```shell
      source venv/bin/activate
      ```
-
-5. Create a new Python file called `app.py` in the project directory.
+4. Create a new Python file called `app.py` for our Flask application.
 
 ## Setting Up the Flask Application
 
-Open `app.py` in a text editor and add the following code:
+1. Open `app.py` and import the necessary modules:
+   ```python
+   from flask import Flask, render_template, request, redirect, url_for
+   from datetime import datetime
+   ```
+2. Create an instance of the Flask application:
+   ```python
+   app = Flask(__name__)
+   ```
+3. Define a route for the home page:
+   ```python
+   @app.route('/')
+   def index():
+       return render_template('index.html')
+   ```
+4. Add a route to handle the form submission for adding a new task:
+   ```python
+   @app.route('/add', methods=['POST'])
+   def add_task():
+       title = request.form['title']
+       desc = request.form['desc']
+       date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+       # TODO: Save the task to a database or any other storage
+       return redirect(url_for('index'))
+   ```
+5. Add a route to render the form for adding a new task:
+   ```python
+   @app.route('/add')
+   def show_add_form():
+       return render_template('add.html')
+   ```
+6. Add a route to handle the form submission for editing a task:
+   ```python
+   @app.route('/edit/<int:task_id>', methods=['POST'])
+   def edit_task(task_id):
+       title = request.form['title']
+       desc = request.form['desc']
+       # TODO: Update the task with the given task_id in the database or storage
+       return redirect(url_for('index'))
+   ```
+7. Add a route to render the form for editing a task:
+   ```python
+   @app.route('/edit/<int:task_id>')
+   def show_edit_form(task_id):
+       # TODO: Retrieve the task with the given task_id from the database or storage
+       # Pass the task data to the template
+       return render_template('edit.html', task=task)
+   ```
+8. Add a route to handle deleting a task:
+   ```python
+   @app.route('/delete/<int:task_id>')
+   def delete_task(task_id):
+       # TODO: Delete the task with the given task_id from the database or storage
+       return redirect(url_for('index'))
+   ```
+9. Run the Flask application:
+   ```shell
+   flask run
+   ```
 
-```python
-from flask import Flask
+## HTML Templates
 
-app = Flask(__name__)
+Create the following HTML templates in a new directory called `templates`:
 
-@app.route('/')
-def hello():
-    return 'Hello, World!'
+1. `index.html`:
+   ```html
+   {% extends "base.html" %}
 
-if __name__ == '__main__':
-    app.run()
-```
+   {% block main %}
+     <!-- Display the tasks here -->
+   {% endblock %}
+   ```
 
-This code sets up a basic Flask application with a single route `/` that returns the string `'Hello, World!'` when accessed.
+2. `add.html`:
+   ```html
+   {% extends "base.html" %}
 
-## Running the Application
+   {% block main %}
+     <h2>Add Task
 
-To run the Flask application, make sure you are still in the project directory and the virtual environment is activated. Then, run the following command:
+</h2>
+     <form action="{{ url_for('add_task') }}" method="POST">
+       <label for="title">Title:</label>
+       <input type="text" id="title" name="title" required><br><br>
+       <label for="desc">Description:</label>
+       <textarea id="desc" name="desc" required></textarea><br><br>
+       <input type="submit" value="Add Task">
+     </form>
+   {% endblock %}
+   ```
 
-```shell
-python app.py
-```
+3. `edit.html`:
+   ```html
+   {% extends "base.html" %}
 
-You should see an output similar to:
+   {% block main %}
+     <h2>Edit Task</h2>
+     <form action="{{ url_for('edit_task', task_id=task.id) }}" method="POST">
+       <label for="title">Title:</label>
+       <input type="text" id="title" name="title" value="{{ task.title }}" required><br><br>
+       <label for="desc">Description:</label>
+       <textarea id="desc" name="desc" required>{{ task.desc }}</textarea><br><br>
+       <input type="submit" value="Update Task">
+     </form>
+   {% endblock %}
+   ```
 
-```
- * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-```
-
-This means your Flask application is running locally on `http://127.0.0.1:5000/`.
-
-Open your web browser and navigate to `http://127.0.0.1:5000/`. You should see the message "Hello, World!" displayed in your browser.
-
-## Creating Routes and Handling Requests
-
-Flask allows you to create multiple routes to handle different URLs. Let's add a new route to handle a "About" page.
-
-Add the following code to `app.py`:
-
-```python
-@app.route('/about')
-def about():
-    return 'This is the About page.'
-```
-
-Save the file and restart the Flask application if it's still running. Now, when you navigate to `http://127.0.0.1:5000/about`, you should see the message "This is the About page." displayed in your browser.
-
-## Rendering HTML Templates
-
-While returning plain text from routes is useful for simple responses, Flask also allows you to render HTML templates to create more complex web pages. Let's create an HTML template for the "About" page.
-
-1. Create a new directory called `templates` in your project directory.
-2. Inside the `templates` directory, create a new file called `about.html`.
-3. Open `about.html` and add the following code:
-
+4. `base.html`:
    ```html
    <!doctype html>
-   <html>
+   <html lang="en">
      <head>
-       <title>About</title>
+       <!-- Required meta tags -->
+       <meta charset="utf-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+       <!-- Bootstrap CSS -->
+       <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+       <title>Task Manager</title>
      </head>
      <body>
-       <h1>About</h1>
-       <p>This is the About page.</p>
+       <div class="container-fluid">
+         <nav class="navbar navbar-expand-lg navbar-light bg-light">
+           <ul class="navbar-nav">
+             <li class="nav-item"><a href="{{ url_for('index') }}" class="nav-link">Tasks</a></li>
+             <li class="nav-item"><a href="{{ url_for('show_add_form') }}" class="nav-link">Add New</a></li>
+           </ul>
+         </nav>
+         <br>
+         {% with messages = get_flashed_messages() %}
+           {% if messages %}
+             {% for message in messages %}
+             <div class="alert alert-primary">
+               {{ message }}
+             </div>
+             {% endfor %}
+           {% endif %}
+         {% endwith %}
+         <br>
+         <h1>Task Manager</h1>
+         <br>
+         {% block main %}{% endblock %}
+       </div>
+
+       <!-- Additional scripts -->
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.0/js/bootstrap.min.js"></script>
      </body>
    </html>
    ```
 
-4. Modify the `about` route in `app.py` to render the `about
-
-.html` template:
-
-   ```python
-   from flask import render_template
-
-   @app.route('/about')
-   def about():
-       return render_template('about.html')
-   ```
-
-Save both files and restart the Flask application. Now, when you navigate to `http://127.0.0.1:5000/about`, you should see the HTML page with the title "About" and the content "This is the About page."
-
 ## Conclusion
 
-Congratulations! You have created your first web application using Python and Flask. You learned how to set up a basic Flask application, create routes to handle different URLs, handle HTTP requests, and render HTML templates. This is just the beginning, and Flask offers many more features to explore and build powerful web applications. Keep experimenting and learning, and enjoy building your web apps with Python and Flask!
+Congratulations! You have created a Task Manager web application using Flask. The application allows users to add, edit, and delete tasks. You can further enhance the application by connecting it to a database, implementing authentication, and adding additional features as per your requirements.
+
+Remember to always follow best practices for web development, including validating user input, securing sensitive data, and properly handling errors. Enjoy building more features on top of this foundation!
